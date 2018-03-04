@@ -1,4 +1,3 @@
-
 var canvas = document.querySelector('.game');
 var ctx = canvas.getContext('2d');
 
@@ -8,7 +7,6 @@ var started = false;
 function isTouchDevice() {
   return 'ontouchstart' in document.documentElement;
 }
-
 
 function fall() {
 
@@ -84,7 +82,9 @@ function fall() {
   }
 
   function drawPoints() {
-    if (points > highscore) { highscore = points;}
+    if (points > highscore) {
+      highscore = points;
+    }
 
     ctx.fillStyle = '#666';
     ctx.font = '32px Helvetica Neue';
@@ -101,7 +101,9 @@ function fall() {
     }
 
     if (event.type === 'keydown') {
-      if (event.keyCode === 82) {fall();}  // r for reset
+      if (event.keyCode === 82) {
+        fall();
+      }  // r for reset
       else if (event.keyCode !== 32) { // spacebar
         return;
       }
