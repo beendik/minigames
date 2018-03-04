@@ -2,68 +2,63 @@ var canvas = document.querySelector('.game');
 var ctx = canvas.getContext('2d');
 
 var highscore = 0;
-var started = false;
-
-function isTouchDevice() {
-  return 'ontouchstart' in document.documentElement;
-}
+var tapt = false;
 
 function fall() {
 
+  tapt = false;
   document.removeEventListener('mousedown', startClickHandler);
   document.removeEventListener('touchstart', startClickHandler);
 
   var playerSize = 20;
-  var blockWidth = 80;
-  var blockHeight = 200;
-  var y = canvas.height - playerSize - 1;
-  var x = canvas.width;
-  var inside = false;
-  var airJumped = true;
+  var playerX = 50;
+  var playerY = canvas.height - playerSize;
 
-  var tapt = false;
+  var airJumped = true;
 
   var dy = 0;
   var points = 0;
-  var dx = 8;
+  var dx = 6;
+
+  var obstacles = [new Obstacle(canvas.width - 225), new Obstacle(canvas.width + 125)];
 
   document.querySelector('.play').blur(); // fokus på knapp gjør spacebar vanskelig
 
   function draw() {
 
-    ctx.fillStyle = 'green';
-    y += dy;
+    playerY += dy;
     dy += 0.8;
-    x -= dx + (points * 0.5);
+    dx += (points * 0.001);
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     ctx.fillStyle = '#133686';
-    ctx.fillRect(50, y, playerSize, playerSize);
-    ctx.fillStyle = '#aaa';
-    ctx.fillRect(x, canvas.height - blockHeight, blockWidth, blockHeight);
+    ctx.fillRect(playerX, playerY, playerSize, playerSize);
+
+    obstacles.forEach(function (obstacle) {
+      obstacle.updatePos(dx);
+      obstacle.draw();
+      if (obstacle.x + obstacle.width <= 0) {
+        obstacle.updatePos(-(canvas.width + obstacle.width));
+      }
+
+      if (obstacle.x <= playerX + playerSize && obstacle.x >= playerX - obstacle.width) {
+        obstacle.inside = true;
+        if (playerY + playerSize >= canvas.height - obstacle.height) {
+          lose();
+        }
+      } else if (obstacle.inside === true) {
+        obstacle.inside = false;
+        points += 1;
+      }
+    });
+
     drawPoints();
 
-    if (y + playerSize >= canvas.height) {
+    if (playerY + playerSize >= canvas.height) {
       dy = 0;
-      y = canvas.height - playerSize;
+      playerY = canvas.height - playerSize;
       airJumped = false;
-    }
-
-    if (x + blockWidth <= 0) {
-      x = canvas.width;
-      blockHeight = 50 + Math.floor(Math.random() * 100);
-      blockWidth = 50 + Math.floor(Math.random() * 80);
-    }
-
-    if (x <= 50 + playerSize && x >= 50 - blockWidth) {
-      inside = true;
-      if (y + playerSize >= canvas.height - blockHeight) {
-        lose();
-      }
-    } else if (inside === true) {
-      inside = false;
-      points += 1;
     }
 
     if (!tapt) {
@@ -78,6 +73,7 @@ function fall() {
     ctx.fillText('Du tapte.', canvas.width / 2, canvas.height / 2);
     tapt = true;
     drawPoints();
+    lost();
 
   }
 
@@ -109,7 +105,7 @@ function fall() {
       }
     }
 
-    if (y === canvas.height - playerSize) {
+    if (playerY === canvas.height - playerSize) {
       dy = -20;
     } else if (!airJumped) {
       dy = -15;
@@ -117,6 +113,7 @@ function fall() {
     }
 
     if (tapt) {
+      console.log(event.type);
       if (event.target === canvas) {
         fall();
       }
@@ -125,8 +122,20 @@ function fall() {
     tapt = false;
   }
 
-  function blocks() {
+  function Obstacle(x) {
+    this.x = x;
+    this.width = 50 + Math.floor(Math.random() * 80);
+    this.height = 50 + Math.floor(Math.random() * 100);
+    this.inside = false;
 
+    this.updatePos = function (dx) {
+      this.x -= dx;
+    };
+
+    this.draw = function () {
+        ctx.fillStyle = '#aaa';
+        ctx.fillRect(this.x, canvas.height - this.height, this.width, this.height);
+      };
   }
 
   document.addEventListener('mousedown', clickHandler, false);
@@ -134,7 +143,6 @@ function fall() {
   document.addEventListener('keydown', clickHandler, false);
 
   draw();
-
 }
 
 function startClickHandler(event) {
@@ -143,10 +151,14 @@ function startClickHandler(event) {
     return;
   }
 
-  if (event.target === canvas && !started) {
+  if (event.target === canvas) {
     fall();
-    started = true;
   }
+}
+
+function lost() {
+  document.addEventListener('mousedown', startClickHandler, false);
+  document.addEventListener('touchstart', startClickHandler, false);
 }
 
 document.addEventListener('mousedown', startClickHandler, false);
