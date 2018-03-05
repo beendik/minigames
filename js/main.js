@@ -50,8 +50,12 @@ function flap() {
       obstacle.updatePos(dx);
       obstacle.draw();
       if (obstacle.x + obstacle.width <= 0 && !backwards) { // Checks if obstacle has exited canvas
+        obstacle.width = 40 + Math.floor(Math.random() * 40);
+        obstacle.height = 10 + Math.floor(Math.random() * 170);
         obstacle.updatePos(-(canvas.width + obstacle.width));
       } else if (obstacle.x + obstacle.width >= canvas.width && backwards) {
+        obstacle.width = 40 + Math.floor(Math.random() * 40);
+        obstacle.height = 10 + Math.floor(Math.random() * 170);
         obstacle.updatePos((canvas.width + obstacle.width));
       }
       checkInside(obstacle);
@@ -149,7 +153,7 @@ function flap() {
   function Obstacle(x) {
     this.x = x;
     this.width = 40 + Math.floor(Math.random() * 40);
-    this.height = 10 + Math.floor(Math.random() * 170);
+    this.height = 10 + Math.floor(Math.random() * 130);
     this.inside = false;
 
     this.updatePos = function(dx) {
