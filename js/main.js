@@ -1,12 +1,12 @@
 var canvas = document.querySelector('.game');
 var context = canvas.getContext('2d');
 
-var highscore = 0;
-var tapt = false;
+var highScore = 0;
+var lost = false;
 
-function fall() {
+function flap() {
   document.querySelector('.play').blur(); // fokus på knapp gjør spacebar vanskelig
-  tapt = false;
+  lost = false;
   document.removeEventListener('mousedown', startClickHandler);
   document.removeEventListener('touchstart', startClickHandler);
 
@@ -16,7 +16,8 @@ function fall() {
 
   var obstacles = [
     new Obstacle(canvas.width - 225),
-    new Obstacle(canvas.width + 125), ];
+    new Obstacle(canvas.width + 125),
+  ];
 
   var dy = 0;
   var points = 0;
@@ -52,7 +53,7 @@ function fall() {
       airJumped = false;
     }
 
-    if (!tapt) {
+    if (!lost) {
       requestAnimationFrame(draw);
     }
   }
@@ -62,7 +63,7 @@ function fall() {
     context.textAlign = 'center';
     context.fillStyle = '#aaa';
     context.fillText('Du tapte.', canvas.width / 2, canvas.height / 2);
-    tapt = true;
+    lost = true;
 
     // reintroduces listeners so that click to start is enabled
     document.addEventListener('mousedown', startClickHandler, false);
@@ -84,16 +85,16 @@ function fall() {
   }
 
   function drawPoints() {
-    if (points > highscore) {
-      highscore = points;
+    if (points > highScore) {
+      highScore = points;
     }
 
     context.fillStyle = '#666';
     context.font = '32px Helvetica Neue';
     context.textAlign = 'center';
-    context.fillText(points, 80, 80);
+    context.fillText(String(points), 80, 80);
     context.fillStyle = '#aaa';
-    context.fillText(highscore, canvas.width - 80, 80);
+    context.fillText(String(highScore), canvas.width - 80, 80);
   }
 
   function clickHandler(event) {
@@ -103,7 +104,7 @@ function fall() {
 
     if (event.type === 'keydown') {
       if (event.keyCode === 82) {
-        fall();
+        flap();
       }  // r for reset
       else if (event.keyCode !== 32) { // spacebar
         return;
@@ -117,13 +118,13 @@ function fall() {
       airJumped = true;
     }
 
-    if (tapt) {
+    if (lost) {
       if (event.target === canvas) {
-        fall();
+        flap();
       }
     }
 
-    tapt = false;
+    lost = false;
   }
 
   function Obstacle(x) {
@@ -157,7 +158,7 @@ function startClickHandler(event) {
   }
 
   if (event.target === canvas) {
-    fall();
+    flap();
   }
 }
 
