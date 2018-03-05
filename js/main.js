@@ -11,24 +11,37 @@ function flap() {
   document.removeEventListener('touchstart', startClickHandler);
 
   var playerSize = 20;
-  var playerX = 50;
+  var playerX = 350 - playerSize / 2;
   var playerY = canvas.height - playerSize;
 
   var obstacles = [
-    new Obstacle(canvas.width - 225),
-    new Obstacle(canvas.width + 125),
+    new Obstacle(canvas.width),
+    new Obstacle(canvas.width + 350),
   ];
 
   var dy = 0;
   var points = 0;
   var dx = 6;
+  var backwards = false;
+  var turnToggle = false; // used to ensure that direction change only happens once per point change
 
   var airJumped = true;
 
   function draw() {
     playerY += dy;
     dy += 0.8;
-    dx += (points * 0.001);
+
+    if (!((points + 1) % 10) && turnToggle) {
+      dx = -dx;
+      backwards = !backwards;
+      turnToggle = false;
+    }
+
+    if (!backwards) {
+      dx += 0.002 * Math.log(points + 5);
+    } else {
+      dx -= 0.002 * Math.log(points + 5);
+    }
 
     context.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -38,8 +51,10 @@ function flap() {
     obstacles.forEach(function (obstacle) {
       obstacle.updatePos(dx);
       obstacle.draw();
-      if (obstacle.x + obstacle.width <= 0) { // Checks if obstacle has exited canvas
+      if (obstacle.x + obstacle.width <= 0 && !backwards) { // Checks if obstacle has exited canvas
         obstacle.updatePos(-(canvas.width + obstacle.width));
+      } else if (obstacle.x + obstacle.width >= canvas.width && backwards) {
+        obstacle.updatePos((canvas.width + obstacle.width));
       }
 
       checkInside(obstacle);
@@ -75,12 +90,13 @@ function flap() {
     if (obstacle.x <= playerX + playerSize &&
         obstacle.x >= playerX - obstacle.width) {
       obstacle.inside = true;
-      if (playerY + playerSize >= canvas.height - obstacle.height) {
+      if (playerY + playerSize >= canvas.height - obstacle.height && !isGracePeriod(points)) {
         lose();
       }
     } else if (obstacle.inside === true) {
       obstacle.inside = false;
       points += 1;
+      turnToggle = true;
     }
   }
 
@@ -129,8 +145,8 @@ function flap() {
 
   function Obstacle(x) {
     this.x = x;
-    this.width = 50 + Math.floor(Math.random() * 80);
-    this.height = 50 + Math.floor(Math.random() * 100);
+    this.width = 40 + Math.floor(Math.random() * 20);
+    this.height = 30 + Math.floor(Math.random() * 150);
     this.inside = false;
 
     this.updatePos = function (dx) {
@@ -139,6 +155,11 @@ function flap() {
 
     this.draw = function () {
       context.fillStyle = '#aaa';
+      if (isGracePeriod(points)) {
+        context.fillText('Grace', canvas.width / 2, canvas.height / 2);
+        context.fillStyle = '#bff2e8';
+      }
+
       context.fillRect(this.x, canvas.height - this.height, this.width,
           this.height);
     };
