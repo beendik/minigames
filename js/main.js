@@ -28,9 +28,10 @@ function flap() {
   var airJumped = true;
 
   function draw() {
+    context.clearRect(0, 0, canvas.width, canvas.height);
+
     playerY += dy;
     dy += 0.8;
-
     if (!((points + 1) % 10) && turnToggle) {
       dx = -dx;
       backwards = !backwards;
@@ -43,12 +44,9 @@ function flap() {
       dx -= 0.002 * Math.log(points + 5);
     }
 
-    context.clearRect(0, 0, canvas.width, canvas.height);
+    drawPlayer();
 
-    context.fillStyle = '#133686';
-    context.fillRect(playerX, playerY, playerSize, playerSize);
-
-    obstacles.forEach(function (obstacle) {
+    obstacles.forEach(function(obstacle) {
       obstacle.updatePos(dx);
       obstacle.draw();
       if (obstacle.x + obstacle.width <= 0 && !backwards) { // Checks if obstacle has exited canvas
@@ -56,7 +54,6 @@ function flap() {
       } else if (obstacle.x + obstacle.width >= canvas.width && backwards) {
         obstacle.updatePos((canvas.width + obstacle.width));
       }
-
       checkInside(obstacle);
     });
 
@@ -90,7 +87,8 @@ function flap() {
     if (obstacle.x <= playerX + playerSize &&
         obstacle.x >= playerX - obstacle.width) {
       obstacle.inside = true;
-      if (playerY + playerSize >= canvas.height - obstacle.height && !isGracePeriod(points)) {
+      if (playerY + playerSize >= canvas.height - obstacle.height &&
+          !isGracePeriod(points)) {
         lose();
       }
     } else if (obstacle.inside === true) {
@@ -111,6 +109,11 @@ function flap() {
     context.fillText(String(points), 80, 80);
     context.fillStyle = '#aaa';
     context.fillText(String(highScore), canvas.width - 80, 80);
+  }
+
+  function drawPlayer() {
+    context.fillStyle = '#133686';
+    context.fillRect(playerX, playerY, playerSize, playerSize);
   }
 
   function clickHandler(event) {
@@ -145,17 +148,18 @@ function flap() {
 
   function Obstacle(x) {
     this.x = x;
-    this.width = 40 + Math.floor(Math.random() * 20);
-    this.height = 30 + Math.floor(Math.random() * 150);
+    this.width = 40 + Math.floor(Math.random() * 40);
+    this.height = 10 + Math.floor(Math.random() * 170);
     this.inside = false;
 
-    this.updatePos = function (dx) {
+    this.updatePos = function(dx) {
       this.x -= dx;
     };
 
-    this.draw = function () {
+    this.draw = function() {
       context.fillStyle = '#aaa';
       if (isGracePeriod(points)) {
+        context.fillStyle = '#133686';
         context.fillText('Grace', canvas.width / 2, canvas.height / 2);
         context.fillStyle = '#bff2e8';
       }
