@@ -1,11 +1,11 @@
 var canvas = document.querySelector('.game');
-var ctx = canvas.getContext('2d');
+var context = canvas.getContext('2d');
 
 var highscore = 0;
 var tapt = false;
 
 function fall() {
-
+  document.querySelector('.play').blur(); // fokus på knapp gjør spacebar vanskelig
   tapt = false;
   document.removeEventListener('mousedown', startClickHandler);
   document.removeEventListener('touchstart', startClickHandler);
@@ -14,43 +14,34 @@ function fall() {
   var playerX = 50;
   var playerY = canvas.height - playerSize;
 
-  var airJumped = true;
+  var obstacles = [
+    new Obstacle(canvas.width - 225),
+    new Obstacle(canvas.width + 125), ];
 
   var dy = 0;
   var points = 0;
   var dx = 6;
 
-  var obstacles = [new Obstacle(canvas.width - 225), new Obstacle(canvas.width + 125)];
-
-  document.querySelector('.play').blur(); // fokus på knapp gjør spacebar vanskelig
+  var airJumped = true;
 
   function draw() {
-
     playerY += dy;
     dy += 0.8;
     dx += (points * 0.001);
 
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    context.clearRect(0, 0, canvas.width, canvas.height);
 
-    ctx.fillStyle = '#133686';
-    ctx.fillRect(playerX, playerY, playerSize, playerSize);
+    context.fillStyle = '#133686';
+    context.fillRect(playerX, playerY, playerSize, playerSize);
 
     obstacles.forEach(function (obstacle) {
       obstacle.updatePos(dx);
       obstacle.draw();
-      if (obstacle.x + obstacle.width <= 0) {
+      if (obstacle.x + obstacle.width <= 0) { // Checks if obstacle has exited canvas
         obstacle.updatePos(-(canvas.width + obstacle.width));
       }
 
-      if (obstacle.x <= playerX + playerSize && obstacle.x >= playerX - obstacle.width) {
-        obstacle.inside = true;
-        if (playerY + playerSize >= canvas.height - obstacle.height) {
-          lose();
-        }
-      } else if (obstacle.inside === true) {
-        obstacle.inside = false;
-        points += 1;
-      }
+      checkInside(obstacle);
     });
 
     drawPoints();
@@ -67,14 +58,29 @@ function fall() {
   }
 
   function lose() {
-    ctx.font = '60px Helvetica Neue';
-    ctx.textAlign = 'center';
-    ctx.fillStyle = '#aaa';
-    ctx.fillText('Du tapte.', canvas.width / 2, canvas.height / 2);
+    context.font = '60px Helvetica Neue';
+    context.textAlign = 'center';
+    context.fillStyle = '#aaa';
+    context.fillText('Du tapte.', canvas.width / 2, canvas.height / 2);
     tapt = true;
-    drawPoints();
-    lost();
 
+    // reintroduces listeners so that click to start is enabled
+    document.addEventListener('mousedown', startClickHandler, false);
+    document.addEventListener('touchstart', startClickHandler, false);
+  }
+
+  // Checks if player is inside obstacle, and adds point if obstacle is passed
+  function checkInside(obstacle) {
+    if (obstacle.x <= playerX + playerSize &&
+        obstacle.x >= playerX - obstacle.width) {
+      obstacle.inside = true;
+      if (playerY + playerSize >= canvas.height - obstacle.height) {
+        lose();
+      }
+    } else if (obstacle.inside === true) {
+      obstacle.inside = false;
+      points += 1;
+    }
   }
 
   function drawPoints() {
@@ -82,13 +88,12 @@ function fall() {
       highscore = points;
     }
 
-    ctx.fillStyle = '#666';
-    ctx.font = '32px Helvetica Neue';
-    ctx.textAlign = 'center';
-    ctx.fillText(points, 80, 80);
-    ctx.fillStyle = '#aaa';
-    ctx.fillText(highscore, canvas.width - 80, 80);
-
+    context.fillStyle = '#666';
+    context.font = '32px Helvetica Neue';
+    context.textAlign = 'center';
+    context.fillText(points, 80, 80);
+    context.fillStyle = '#aaa';
+    context.fillText(highscore, canvas.width - 80, 80);
   }
 
   function clickHandler(event) {
@@ -113,7 +118,6 @@ function fall() {
     }
 
     if (tapt) {
-      console.log(event.type);
       if (event.target === canvas) {
         fall();
       }
@@ -133,9 +137,10 @@ function fall() {
     };
 
     this.draw = function () {
-        ctx.fillStyle = '#aaa';
-        ctx.fillRect(this.x, canvas.height - this.height, this.width, this.height);
-      };
+      context.fillStyle = '#aaa';
+      context.fillRect(this.x, canvas.height - this.height, this.width,
+          this.height);
+    };
   }
 
   document.addEventListener('mousedown', clickHandler, false);
@@ -154,11 +159,6 @@ function startClickHandler(event) {
   if (event.target === canvas) {
     fall();
   }
-}
-
-function lost() {
-  document.addEventListener('mousedown', startClickHandler, false);
-  document.addEventListener('touchstart', startClickHandler, false);
 }
 
 document.addEventListener('mousedown', startClickHandler, false);
