@@ -15,13 +15,13 @@ function flap() {
   var playerY = canvas.height - playerSize;
 
   var obstacles = [
-    new Obstacle(canvas.width),
-    new Obstacle(canvas.width + 350),
+    new Obstacle(canvas.width + 100),
+    new Obstacle(canvas.width + 650),
   ];
 
   var dy = 0;
   var points = 0;
-  var dx = 6;
+  var dx = 9;
   var backwards = false;
   var turnToggle = false; // used to ensure that direction change only happens once per point change
 
@@ -31,17 +31,11 @@ function flap() {
     context.clearRect(0, 0, canvas.width, canvas.height);
 
     playerY += dy;
-    dy += 0.8;
+    dy += 1.4;
     if (!((points + 1) % 10) && turnToggle) {
       dx = -dx;
       backwards = !backwards;
       turnToggle = false;
-    }
-
-    if (!backwards) {
-      dx += 0.002 * Math.log(points + 5);
-    } else {
-      dx -= 0.002 * Math.log(points + 5);
     }
 
     drawPlayer();
@@ -52,11 +46,11 @@ function flap() {
       if (obstacle.x + obstacle.width <= 0 && !backwards) { // Checks if obstacle has exited canvas
         obstacle.width = 40 + Math.floor(Math.random() * 40);
         obstacle.height = 10 + Math.floor(Math.random() * 170);
-        obstacle.updatePos(-(canvas.width + obstacle.width));
-      } else if (obstacle.x + obstacle.width >= canvas.width && backwards) {
+        obstacle.updatePos(-(canvas.width + obstacle.width + 350));
+      } else if (obstacle.x >= canvas.width && backwards) {
         obstacle.width = 40 + Math.floor(Math.random() * 40);
         obstacle.height = 10 + Math.floor(Math.random() * 170);
-        obstacle.updatePos((canvas.width + obstacle.width));
+        obstacle.updatePos((canvas.width + obstacle.width + 350));
       }
       checkInside(obstacle);
     });
@@ -99,6 +93,16 @@ function flap() {
       obstacle.inside = false;
       points += 1;
       turnToggle = true;
+
+      // Increase speed if added point
+      if (!backwards) {
+        dx += 0.1;
+        // dx += 0.002 * Math.log(points + 5);
+      } else {
+        // dx -= 0.002 * Math.log(points + 5);
+        dx -= 0.1;
+      }
+
     }
   }
 
@@ -113,6 +117,7 @@ function flap() {
     context.fillText(String(points), 80, 80);
     context.fillStyle = '#aaa';
     context.fillText(String(highScore), canvas.width - 80, 80);
+
   }
 
   function drawPlayer() {
@@ -135,9 +140,9 @@ function flap() {
     }
 
     if (playerY === canvas.height - playerSize) {
-      dy = -20;
+      dy = -25;
     } else if (!airJumped) {
-      dy = -15;
+      dy = -19;
       airJumped = true;
     }
 
