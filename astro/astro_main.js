@@ -3,6 +3,7 @@ var context = canvas.getContext('2d');
 
 function play() {
     var player = new Player(canvas.width / 2, canvas.height / 2);
+    var projectiles = [];
     var left, right, up, down;
     var mousePos = {
         x: 0,
@@ -27,12 +28,24 @@ function play() {
         mousePos = getRelativeMousePos(e)
     };
 
+    document.onmousedown = function () {
+        projectiles.push(player.shoot());
+    };
+
     function draw() {
-        // Main loop
+        // Main action loop
         context.clearRect(0, 0, canvas.width, canvas.height);
 
         player.updatePos();
         player.draw();
+        for (var i = 0; i < projectiles.length; i++) {
+            projectiles[i].updatePos();
+            projectiles[i].draw();
+            // Remove out-of-bounds projectiles
+            if (projectiles[i].outOfBounds()) {
+                projectiles.splice(i, 1);
+            }
+        }
         window.requestAnimationFrame(draw)
     }
 
@@ -105,6 +118,38 @@ function play() {
             context.fill();
             context.restore();
         };
+
+        this.shoot = function () {
+            return new Projectile(this.x, this.y, mousePos.x, mousePos.y);
+        }
+    }
+
+
+    function Projectile(x, y, aimX, aimY) {
+        this.x = x;
+        this.y = y;
+        this.velocity = 5;
+
+        // Calculate directional speed
+        var abs = Math.sqrt(Math.pow((this.x - aimX), 2) + Math.pow((this.y - aimY), 2));
+        this.dx = ((aimX - this.x) * this.velocity) / abs;
+        this.dy = ((aimY - this.y) * this.velocity) / abs;
+
+        this.updatePos = function () {
+            this.x += this.dx;
+            this.y += this.dy;
+        };
+
+        this.draw = function () {
+            context.save();
+            context.fillStyle = "#1ec6c6";
+            context.fillRect(this.x, this.y, 5, 5);
+            context.restore();
+        };
+
+        this.outOfBounds = function () {
+            return this.x < 0 || this.x > canvas.width || this.y < 0 || this.y > canvas.height;
+        }
     }
 
     function getRelativeMousePos(e) {
