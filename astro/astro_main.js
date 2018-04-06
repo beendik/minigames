@@ -164,6 +164,7 @@ function play() {
         var dx = x2 - x1;
         var dy = y2 - y1;
 
-        return Math.atan2(dx, dy) * -1 + Math.PI;
+        return Math.atan2(dx, -dy) // Negative because canvas uses a negative y axis,
+                                   // while atan2 uses a positive one (think unit circle)
     }
 }
