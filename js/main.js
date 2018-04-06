@@ -1,6 +1,8 @@
 var canvas = document.querySelector('.game');
 var context = canvas.getContext('2d');
 
+
+
 var highScore = 0;
 var lost = false;
 
@@ -9,29 +11,31 @@ function flap() {
   lost = false;
   document.removeEventListener('mousedown', startClickHandler);
   document.removeEventListener('touchstart', startClickHandler);
+  document.removeEventListener('keydown', startClickHandler);
 
-  var playerSize = 20;
+  var playerSize = 40;
   var playerX = 350 - playerSize / 2;
-  var playerY = canvas.height - playerSize;
+  var playerY = canvas.height / 20 - 100;
+
+  var playerImage = new Image(playerSize, playerSize);
+  playerImage.src = 'flappy.png';
 
   var obstacles = [
     new Obstacle(canvas.width + 100),
     new Obstacle(canvas.width + 650),
   ];
 
-  var dy = 0;
+  var dy = -2;
   var points = 0;
-  var dx = 9;
+  var dx = 6;
   var backwards = false;
   var turnToggle = false; // used to ensure that direction change only happens once per point change
-
-  var airJumped = true;
 
   function draw() {
     context.clearRect(0, 0, canvas.width, canvas.height);
 
     playerY += dy;
-    dy += 1.4;
+    dy += 0.4;
     if (!((points + 1) % 10) && turnToggle) {
       dx = -dx;
       backwards = !backwards;
@@ -43,24 +47,30 @@ function flap() {
     obstacles.forEach(function(obstacle) {
       obstacle.updatePos(dx);
       obstacle.draw();
-      if (obstacle.x + obstacle.width <= 0 && !backwards) { // Checks if obstacle has exited canvas
-        obstacle.width = 40 + Math.floor(Math.random() * 40);
-        obstacle.height = 10 + Math.floor(Math.random() * 170);
-        obstacle.updatePos(-(canvas.width + obstacle.width + 350));
-      } else if (obstacle.x >= canvas.width && backwards) {
-        obstacle.width = 40 + Math.floor(Math.random() * 40);
-        obstacle.height = 10 + Math.floor(Math.random() * 170);
-        obstacle.updatePos((canvas.width + obstacle.width + 350));
+
+      if (obstacle.x + obstacle.width <= 0 && !backwards ||
+          obstacle.x >= canvas.width && backwards) { // Checks if obstacle has exited canvas
+        obstacle.width = 50;
+        obstacle.height = 10 + Math.floor(Math.random() * 230);
+        obstacle.topHeight = canvas.height - obstacle.height - Math.random() *
+            50 - 100;
+
+        if (!backwards) {
+          obstacle.updatePos(-(canvas.width + obstacle.width + 350));
+        } else {
+          obstacle.updatePos((canvas.width + obstacle.width + 350));
+        }
+
       }
       checkInside(obstacle);
     });
 
     drawPoints();
 
-    if (playerY + playerSize >= canvas.height) {
-      dy = 0;
-      playerY = canvas.height - playerSize;
-      airJumped = false;
+    if (playerY >= canvas.height) {
+      lose();
+    } else if (playerY <= 0) {
+      playerY = 0;
     }
 
     if (!lost) {
@@ -71,13 +81,14 @@ function flap() {
   function lose() {
     context.font = '60px Helvetica Neue';
     context.textAlign = 'center';
-    context.fillStyle = '#aaa';
+    context.fillStyle = '#666';
     context.fillText('Du tapte.', canvas.width / 2, canvas.height / 2);
     lost = true;
 
     // reintroduces listeners so that click to start is enabled
     document.addEventListener('mousedown', startClickHandler, false);
     document.addEventListener('touchstart', startClickHandler, false);
+    document.addEventListener('keydown', startClickHandler, false);
   }
 
   // Checks if player is inside obstacle, and adds point if obstacle is passed
@@ -85,7 +96,11 @@ function flap() {
     if (obstacle.x <= playerX + playerSize &&
         obstacle.x >= playerX - obstacle.width) {
       obstacle.inside = true;
-      if (playerY + playerSize >= canvas.height - obstacle.height &&
+
+      // TODO: +- 5 pga unøyaktig sprite
+      if ((playerY + playerSize - 5 >= canvas.height - obstacle.height ||
+              playerY + 5 <=
+              obstacle.topHeight) &&
           !isGracePeriod(points)) {
         lose();
       }
@@ -122,7 +137,17 @@ function flap() {
 
   function drawPlayer() {
     context.fillStyle = '#133686';
-    context.fillRect(playerX, playerY, playerSize, playerSize);
+    context.save();
+    context.translate(playerX + playerSize / 2, playerY + playerSize / 2);
+    if (backwards) {
+      context.scale(-1, 1);
+    }
+    context.rotate(dy / 30);
+    //  context.fillRect(-playerSize / 2, -playerSize / 2, playerSize,
+    //      playerSize);
+    void context.drawImage(playerImage, -playerSize / 2, -playerSize / 2,
+        playerSize, playerSize);
+    context.restore();
   }
 
   function clickHandler(event) {
@@ -139,12 +164,7 @@ function flap() {
       }
     }
 
-    if (playerY === canvas.height - playerSize) {
-      dy = -25;
-    } else if (!airJumped) {
-      dy = -19;
-      airJumped = true;
-    }
+    dy = -8;
 
     if (lost) {
       if (event.target === canvas) {
@@ -157,9 +177,10 @@ function flap() {
 
   function Obstacle(x) {
     this.x = x;
-    this.width = 40 + Math.floor(Math.random() * 40);
-    this.height = 10 + Math.floor(Math.random() * 130);
+    this.width = 50;
+    this.height = 10 + Math.floor(Math.random() * 230);
     this.inside = false;
+    this.topHeight = canvas.height - this.height - Math.random() * 50 - 100;
 
     this.updatePos = function(dx) {
       this.x -= dx;
@@ -168,13 +189,12 @@ function flap() {
     this.draw = function() {
       context.fillStyle = '#aaa';
       if (isGracePeriod(points)) {
-        context.fillStyle = '#133686';
-        context.fillText('Grace', canvas.width / 2, canvas.height / 2);
         context.fillStyle = '#bff2e8';
       }
 
       context.fillRect(this.x, canvas.height - this.height, this.width,
           this.height);
+      context.fillRect(this.x, 0, this.width, this.topHeight);
     };
   }
 
@@ -183,12 +203,18 @@ function flap() {
   document.addEventListener('keydown', clickHandler, false);
 
   draw();
-}
+};
 
 function startClickHandler(event) {
 
   if (isTouchDevice() && event.type === 'mousedown') {
     return;
+  }
+
+  if (event.type === 'keydown') {
+    if (event.keyCode == 32) { // spacebar
+      flap();
+    }
   }
 
   if (event.target === canvas) {
@@ -198,3 +224,4 @@ function startClickHandler(event) {
 
 document.addEventListener('mousedown', startClickHandler, false);
 document.addEventListener('touchstart', startClickHandler, false);
+document.addEventListener('keydown', startClickHandler, false);
