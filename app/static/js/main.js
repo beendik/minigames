@@ -26,19 +26,12 @@ function play() {
   var dy = -2;
   var points = 0;
   var dx = 6;
-  var backwards = false;
-  var turnToggle = false; // used to ensure that direction change only happens once per point change
 
   function draw() {
     context.clearRect(0, 0, canvas.width, canvas.height);
 
     playerY += dy;
     dy += 0.4;
-    if (!((points + 1) % 10) && turnToggle) {
-      dx = -dx;
-      backwards = !backwards;
-      turnToggle = false;
-    }
 
     drawPlayer();
 
@@ -46,18 +39,13 @@ function play() {
       obstacle.updatePos(dx);
       obstacle.draw();
 
-      if (obstacle.x + obstacle.width <= 0 && !backwards ||
-          obstacle.x >= canvas.width && backwards) { // Checks if obstacle has exited canvas
+      if (obstacle.x + obstacle.width <= 0) { // Checks if obstacle has exited canvas
         obstacle.width = 50;
         obstacle.height = 10 + Math.floor(Math.random() * 230);
         obstacle.topHeight = canvas.height - obstacle.height - Math.random() *
             50 - 100;
 
-        if (!backwards) {
-          obstacle.updatePos(-(canvas.width + obstacle.width + 350));
-        } else {
-          obstacle.updatePos((canvas.width + obstacle.width + 350));
-        }
+        obstacle.updatePos(-(canvas.width + obstacle.width + 350));
 
       }
       checkInside(obstacle);
@@ -92,29 +80,21 @@ function play() {
   // Checks if player is inside obstacle, and adds point if obstacle is passed
   function checkInside(obstacle) {
     if (obstacle.x <= playerX + playerSize &&
-        obstacle.x >= playerX - obstacle.width) {
+        obstacle.x + obstacle.width >= playerX) {
       obstacle.inside = true;
 
       // TODO: +- 5 pga unøyaktig sprite
       if ((playerY + playerSize - 5 >= canvas.height - obstacle.height ||
-              playerY + 5 <=
-              obstacle.topHeight) &&
-          !isGracePeriod(points)) {
+          playerY + 5 <=
+          obstacle.topHeight)) {
         lose();
       }
     } else if (obstacle.inside === true) {
       obstacle.inside = false;
       points += 1;
-      turnToggle = true;
 
       // Increase speed if added point
-      if (!backwards) {
-        dx += 0.1;
-        // dx += 0.002 * Math.log(points + 5);
-      } else {
-        // dx -= 0.002 * Math.log(points + 5);
-        dx -= 0.1;
-      }
+      dx += 0.1;
 
     }
   }
@@ -137,11 +117,8 @@ function play() {
     context.fillStyle = '#133686';
     context.save();
     context.translate(playerX + playerSize / 2, playerY + playerSize / 2);
-    if (backwards) {
-      context.scale(-1, 1);
-    }
     context.rotate(dy / 30);
-   //   context.fillRect(-playerSize / 2, -playerSize / 2, playerSize,
+    //   context.fillRect(-playerSize / 2, -playerSize / 2, playerSize,
     //      playerSize);
     void context.drawImage(playerImage, -playerSize / 2, -playerSize / 2,
         playerSize, playerSize);
@@ -186,9 +163,6 @@ function play() {
 
     this.draw = function() {
       context.fillStyle = '#aaa';
-      if (isGracePeriod(points)) {
-        context.fillStyle = '#bff2e8';
-      }
 
       context.fillRect(this.x, canvas.height - this.height, this.width,
           this.height);
@@ -210,7 +184,7 @@ function startClickHandler(event) {
   }
 
   if (event.type === 'keydown') {
-    if (event.keyCode == 32) { // spacebar
+    if (event.keyCode === 32) { // spacebar
       play();
     }
   }

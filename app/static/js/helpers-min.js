@@ -1,1 +1,0 @@
-function isTouchDevice(){return"ontouchstart"in document.documentElement}function isGracePeriod(n){return(n+1)%10<=1&&n>0}
