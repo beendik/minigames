@@ -1,12 +1,10 @@
 var canvas = document.querySelector('.game');
 var context = canvas.getContext('2d');
 
-
-
 var highScore = 0;
 var lost = false;
 
-function flap() {
+function play() {
   document.querySelector('.play').blur(); // fokus på knapp gjør spacebar vanskelig
   lost = false;
   document.removeEventListener('mousedown', startClickHandler);
@@ -18,7 +16,7 @@ function flap() {
   var playerY = canvas.height / 20 - 100;
 
   var playerImage = new Image(playerSize, playerSize);
-  playerImage.src = 'flappy.png';
+  playerImage.src = staticImgPath + '/flappy.png';
 
   var obstacles = [
     new Obstacle(canvas.width + 100),
@@ -143,7 +141,7 @@ function flap() {
       context.scale(-1, 1);
     }
     context.rotate(dy / 30);
-    //  context.fillRect(-playerSize / 2, -playerSize / 2, playerSize,
+   //   context.fillRect(-playerSize / 2, -playerSize / 2, playerSize,
     //      playerSize);
     void context.drawImage(playerImage, -playerSize / 2, -playerSize / 2,
         playerSize, playerSize);
@@ -157,7 +155,7 @@ function flap() {
 
     if (event.type === 'keydown') {
       if (event.keyCode === 82) {
-        flap();
+        play();
       }  // r for reset
       else if (event.keyCode !== 32) { // spacebar
         return;
@@ -168,7 +166,7 @@ function flap() {
 
     if (lost) {
       if (event.target === canvas) {
-        flap();
+        play();
       }
     }
 
@@ -213,12 +211,12 @@ function startClickHandler(event) {
 
   if (event.type === 'keydown') {
     if (event.keyCode == 32) { // spacebar
-      flap();
+      play();
     }
   }
 
   if (event.target === canvas) {
-    flap();
+    play();
   }
 }
 
