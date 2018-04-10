@@ -3,8 +3,9 @@
 
 
 ### Manual ignores ###
-
+__pycache__/
 venv/
+*.iml
 
 ## Excluding node. Might be temporary
 
