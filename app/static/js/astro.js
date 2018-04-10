@@ -59,8 +59,10 @@ function play() {
             // Hit enemies
             for (var k = 0; k < projectiles.length; k++) {
                 if (enemies[j].isHitBy(projectiles[k])) {
+                    enemies[j].die();
                     enemies.splice(j, 1);
                     projectiles.splice(k, 1);
+                    break; // If enemy is hit by projectile, it can't be hit by another
                 }
             }
         }
@@ -69,6 +71,7 @@ function play() {
             context.textAlign = 'center';
             context.fillStyle = '#aaa';
             context.fillText('Du tapte.', canvas.width / 2, canvas.height / 2);
+            //console.log(player.x, player.y);
             return;
         }
         window.requestAnimationFrame(draw);
@@ -221,6 +224,14 @@ function play() {
             var dist = Math.sqrt(Math.pow((this.x - object.x), 2) + Math.pow((this.y - object.y), 2));
             return dist <= 12;
         };
+
+        this.die = function () {
+            var radius = 15;
+            var randx =  (Math.random() + 1) * radius;
+            var randy =  (Math.random() + 1) * radius;
+            enemies.push(new Enemy(this.x + randx, this.y + randy, player));
+            enemies.push(new Enemy(this.x - randx, this.y - randy, player))
+        }
     }
 
     function getRelativeMousePos(e) {
