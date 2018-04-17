@@ -5,8 +5,17 @@
     <title>404</title>
 </head>
 <body>
-{% if route == 'game' %}
-<p style="text-align: center; margin-top: 60px;"><i>{{ word }}</i> finnes ikke</p>
-{% endif %}
+
+
+<p style="text-align: center; margin-top: 60px;">
+    {% if route == 'game' %}
+        Spillet  <i>{{ word }}</i>
+    {% else %}
+        Siden
+    {% endif %}
+    finnes ikke
+</p>
+
+
 </body>
 </html>

@@ -1,8 +1,8 @@
-var canvas = document.querySelector('.game');
-var context = canvas.getContext('2d');
+let canvas = document.querySelector('.game');
+let context = canvas.getContext('2d');
 
-var highScore = 0;
-var lost = false;
+let highScore = 0;
+let lost = false;
 
 function play() {
   document.querySelector('.play').blur(); // fokus på knapp gjør spacebar vanskelig
@@ -11,21 +11,21 @@ function play() {
   document.removeEventListener('touchstart', startClickHandler);
   document.removeEventListener('keydown', startClickHandler);
 
-  var playerSize = 40;
-  var playerX = 350 - playerSize / 2;
-  var playerY = canvas.height / 20 - 100;
+  let playerSize = 40;
+  let playerX = 350 - playerSize / 2;
+  let playerY = canvas.height / 20 - 100;
 
-  var playerImage = new Image(playerSize, playerSize);
+  let playerImage = new Image(playerSize, playerSize);
   playerImage.src = staticImgPath + '/flappy.png';
 
-  var obstacles = [
+  let obstacles = [
     new Obstacle(canvas.width + 100),
     new Obstacle(canvas.width + 650),
   ];
 
-  var dy = -2;
-  var points = 0;
-  var dx = 6;
+  let dy = -2;
+  let points = 0;
+  let dx = 6;
 
   function draw() {
     context.clearRect(0, 0, canvas.width, canvas.height);
@@ -42,8 +42,7 @@ function play() {
       if (obstacle.x + obstacle.width <= 0) { // Checks if obstacle has exited canvas
         obstacle.width = 50;
         obstacle.height = 10 + Math.floor(Math.random() * 230);
-        obstacle.topHeight = canvas.height - obstacle.height - Math.random() *
-            50 - 100;
+        obstacle.topHeight = canvas.height - obstacle.height - Math.random() * 50 - 100;
 
         obstacle.updatePos(-(canvas.width + obstacle.width + 350));
 
@@ -79,14 +78,11 @@ function play() {
 
   // Checks if player is inside obstacle, and adds point if obstacle is passed
   function checkInside(obstacle) {
-    if (obstacle.x <= playerX + playerSize &&
-        obstacle.x + obstacle.width >= playerX) {
+    if (obstacle.x <= playerX + playerSize && obstacle.x + obstacle.width >= playerX) {
       obstacle.inside = true;
 
       // TODO: +- 5 pga unøyaktig sprite
-      if ((playerY + playerSize - 5 >= canvas.height - obstacle.height ||
-          playerY + 5 <=
-          obstacle.topHeight)) {
+      if ((playerY + playerSize - 5 >= canvas.height - obstacle.height || playerY + 5 <= obstacle.topHeight)) {
         lose();
       }
     } else if (obstacle.inside === true) {
@@ -118,10 +114,8 @@ function play() {
     context.save();
     context.translate(playerX + playerSize / 2, playerY + playerSize / 2);
     context.rotate(dy / 30);
-    //   context.fillRect(-playerSize / 2, -playerSize / 2, playerSize,
-    //      playerSize);
-    void context.drawImage(playerImage, -playerSize / 2, -playerSize / 2,
-        playerSize, playerSize);
+    //   context.fillRect(-playerSize / 2, -playerSize / 2, playerSize, playerSize);
+    void context.drawImage(playerImage, -playerSize / 2, -playerSize / 2, playerSize, playerSize);
     context.restore();
   }
 
@@ -164,8 +158,7 @@ function play() {
     this.draw = function() {
       context.fillStyle = '#aaa';
 
-      context.fillRect(this.x, canvas.height - this.height, this.width,
-          this.height);
+      context.fillRect(this.x, canvas.height - this.height, this.width, this.height);
       context.fillRect(this.x, 0, this.width, this.topHeight);
     };
   }
@@ -175,7 +168,7 @@ function play() {
   document.addEventListener('keydown', clickHandler, false);
 
   draw();
-};
+}
 
 function startClickHandler(event) {
 
