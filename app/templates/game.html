@@ -1,0 +1,25 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ game['title'] }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+<section class="gameWrapper">
+    <canvas class="game" width="700" height="500">
+    </canvas>
+    <button class="play" onclick="play()">Nytt spill</button>
+    {% if game %}
+        <p>{{ game['description'] }}</p>
+    {% endif %}
+</section>
+
+<script>let staticImgPath = '{{ url_for('static', filename = 'img') }}';</script>
+<script src="{{ url_for('static', filename='js/helpers.js') }}"></script>
+<script src="{{ url_for('static', filename=game.script) }}"></script>
+
+</body>
+</html>

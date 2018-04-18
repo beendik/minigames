@@ -1,46 +1,37 @@
-var canvas = document.querySelector('.game');
-var context = canvas.getContext('2d');
+let canvas = document.querySelector('.game');
+let context = canvas.getContext('2d');
 
+let highScore = 0;
+let lost = false;
 
-
-var highScore = 0;
-var lost = false;
-
-function flap() {
+function play() {
   document.querySelector('.play').blur(); // fokus på knapp gjør spacebar vanskelig
   lost = false;
   document.removeEventListener('mousedown', startClickHandler);
   document.removeEventListener('touchstart', startClickHandler);
   document.removeEventListener('keydown', startClickHandler);
 
-  var playerSize = 40;
-  var playerX = 350 - playerSize / 2;
-  var playerY = canvas.height / 20 - 100;
+  let playerSize = 40;
+  let playerX = 350 - playerSize / 2;
+  let playerY = canvas.height / 20 - 100;
 
-  var playerImage = new Image(playerSize, playerSize);
-  playerImage.src = 'flappy.png';
+  let playerImage = new Image(playerSize, playerSize);
+  playerImage.src = staticImgPath + '/flappy.png';
 
-  var obstacles = [
+  let obstacles = [
     new Obstacle(canvas.width + 100),
     new Obstacle(canvas.width + 650),
   ];
 
-  var dy = -2;
-  var points = 0;
-  var dx = 6;
-  var backwards = false;
-  var turnToggle = false; // used to ensure that direction change only happens once per point change
+  let dy = -2;
+  let points = 0;
+  let dx = 6;
 
   function draw() {
     context.clearRect(0, 0, canvas.width, canvas.height);
 
     playerY += dy;
     dy += 0.4;
-    if (!((points + 1) % 10) && turnToggle) {
-      dx = -dx;
-      backwards = !backwards;
-      turnToggle = false;
-    }
 
     drawPlayer();
 
@@ -48,18 +39,12 @@ function flap() {
       obstacle.updatePos(dx);
       obstacle.draw();
 
-      if (obstacle.x + obstacle.width <= 0 && !backwards ||
-          obstacle.x >= canvas.width && backwards) { // Checks if obstacle has exited canvas
+      if (obstacle.x + obstacle.width <= 0) { // Checks if obstacle has exited canvas
         obstacle.width = 50;
         obstacle.height = 10 + Math.floor(Math.random() * 230);
-        obstacle.topHeight = canvas.height - obstacle.height - Math.random() *
-            50 - 100;
+        obstacle.topHeight = canvas.height - obstacle.height - Math.random() * 50 - 100;
 
-        if (!backwards) {
-          obstacle.updatePos(-(canvas.width + obstacle.width + 350));
-        } else {
-          obstacle.updatePos((canvas.width + obstacle.width + 350));
-        }
+        obstacle.updatePos(-(canvas.width + obstacle.width + 350));
 
       }
       checkInside(obstacle);
@@ -93,30 +78,19 @@ function flap() {
 
   // Checks if player is inside obstacle, and adds point if obstacle is passed
   function checkInside(obstacle) {
-    if (obstacle.x <= playerX + playerSize &&
-        obstacle.x >= playerX - obstacle.width) {
+    if (obstacle.x <= playerX + playerSize && obstacle.x + obstacle.width >= playerX) {
       obstacle.inside = true;
 
       // TODO: +- 5 pga unøyaktig sprite
-      if ((playerY + playerSize - 5 >= canvas.height - obstacle.height ||
-              playerY + 5 <=
-              obstacle.topHeight) &&
-          !isGracePeriod(points)) {
+      if ((playerY + playerSize - 5 >= canvas.height - obstacle.height || playerY + 5 <= obstacle.topHeight)) {
         lose();
       }
     } else if (obstacle.inside === true) {
       obstacle.inside = false;
       points += 1;
-      turnToggle = true;
 
       // Increase speed if added point
-      if (!backwards) {
-        dx += 0.1;
-        // dx += 0.002 * Math.log(points + 5);
-      } else {
-        // dx -= 0.002 * Math.log(points + 5);
-        dx -= 0.1;
-      }
+      dx += 0.1;
 
     }
   }
@@ -139,14 +113,9 @@ function flap() {
     context.fillStyle = '#133686';
     context.save();
     context.translate(playerX + playerSize / 2, playerY + playerSize / 2);
-    if (backwards) {
-      context.scale(-1, 1);
-    }
     context.rotate(dy / 30);
-    //  context.fillRect(-playerSize / 2, -playerSize / 2, playerSize,
-    //      playerSize);
-    void context.drawImage(playerImage, -playerSize / 2, -playerSize / 2,
-        playerSize, playerSize);
+    //   context.fillRect(-playerSize / 2, -playerSize / 2, playerSize, playerSize);
+    void context.drawImage(playerImage, -playerSize / 2, -playerSize / 2, playerSize, playerSize);
     context.restore();
   }
 
@@ -157,7 +126,7 @@ function flap() {
 
     if (event.type === 'keydown') {
       if (event.keyCode === 82) {
-        flap();
+        play();
       }  // r for reset
       else if (event.keyCode !== 32) { // spacebar
         return;
@@ -168,7 +137,7 @@ function flap() {
 
     if (lost) {
       if (event.target === canvas) {
-        flap();
+        play();
       }
     }
 
@@ -188,12 +157,8 @@ function flap() {
 
     this.draw = function() {
       context.fillStyle = '#aaa';
-      if (isGracePeriod(points)) {
-        context.fillStyle = '#bff2e8';
-      }
 
-      context.fillRect(this.x, canvas.height - this.height, this.width,
-          this.height);
+      context.fillRect(this.x, canvas.height - this.height, this.width, this.height);
       context.fillRect(this.x, 0, this.width, this.topHeight);
     };
   }
@@ -203,7 +168,7 @@ function flap() {
   document.addEventListener('keydown', clickHandler, false);
 
   draw();
-};
+}
 
 function startClickHandler(event) {
 
@@ -212,13 +177,13 @@ function startClickHandler(event) {
   }
 
   if (event.type === 'keydown') {
-    if (event.keyCode == 32) { // spacebar
-      flap();
+    if (event.keyCode === 32) { // spacebar
+      play();
     }
   }
 
   if (event.target === canvas) {
-    flap();
+    play();
   }
 }
 
