@@ -1,38 +1,38 @@
-var canvas = document.querySelector('.game');
-var context = canvas.getContext('2d');
+const canvas = document.querySelector('.game');
+const context = canvas.getContext('2d');
 
 function play() {
-    var player = new Player(canvas.width / 2, canvas.height / 2);
-    var projectiles = [];
-    var enemies = [new Enemy(canvas.width / 2, canvas.height / 5, player)];
-    var left, right, up, down;
-    var mousePos = {
+    let player = new Player(canvas.width / 2, canvas.height / 2);
+    let projectiles = [];
+    let enemies = [new Enemy(canvas.width / 2, canvas.height / 5, player)];
+    let left, right, up, down;
+    let mousePos = {
         x: 0,
         y: 0
     };
-    var gameOver = false;
+    let gameOver = false;
 
-    document.onkeydown = function (e) {
+    document.addEventListener("keydown", function (e) {
         if (e.keyCode === 37 || e.keyCode === 65) left = true;
         if (e.keyCode === 38 || e.keyCode === 87) up = true;
         if (e.keyCode === 39 || e.keyCode === 68) right = true;
         if (e.keyCode === 40 || e.keyCode === 83) down = true;
-    };
+    });
 
-    document.onkeyup = function (e) {
+    document.addEventListener("keyup", function (e) {
         if (e.keyCode === 37 || e.keyCode === 65) left = false;
         if (e.keyCode === 38 || e.keyCode === 87) up = false;
         if (e.keyCode === 39 || e.keyCode === 68) right = false;
         if (e.keyCode === 40 || e.keyCode === 83) down = false;
-    };
+    });
 
-    document.onmousemove = function (e) {
+    document.addEventListener("mousemove", function (e) {
         mousePos = getRelativeMousePos(e)
-    };
+    });
 
-    document.onmousedown = function () {
+    document.addEventListener("mousedown", function () {
         projectiles.push(player.shoot());
-    };
+    });
 
     function draw() {
         // Main action loop
@@ -40,7 +40,7 @@ function play() {
 
         player.updatePos();
         player.draw();
-        for (var i = 0; i < projectiles.length; i++) {
+        for (let i = 0; i < projectiles.length; i++) {
             projectiles[i].updatePos();
             projectiles[i].draw();
             // Remove out-of-bounds projectiles
@@ -48,7 +48,7 @@ function play() {
                 projectiles.splice(i, 1);
             }
         }
-        for (var j = 0; j < enemies.length; j++) {
+        for (let j = 0; j < enemies.length; j++) {
             enemies[j].updatePos();
             enemies[j].draw();
 
@@ -57,7 +57,7 @@ function play() {
                 gameOver = true;
             }
             // Hit enemies
-            for (var k = 0; k < projectiles.length; k++) {
+            for (let k = 0; k < projectiles.length; k++) {
                 if (enemies[j].isHitBy(projectiles[k])) {
                     enemies[j].die();
                     enemies.splice(j, 1);
@@ -165,7 +165,7 @@ function play() {
         this.size = 5;
 
         // Calculate directional speed
-        var abs = Math.sqrt(Math.pow((this.x - aimX), 2) + Math.pow((this.y - aimY), 2));
+        let abs = Math.sqrt(Math.pow((this.x - aimX), 2) + Math.pow((this.y - aimY), 2));
         this.dx = ((aimX - this.x) * this.velocity) / abs;
         this.dy = ((aimY - this.y) * this.velocity) / abs;
 
@@ -200,7 +200,7 @@ function play() {
         this.updatePos = function () {
 
             // Calculate directional speed
-            var abs = Math.sqrt(Math.pow((this.x - this.target.x), 2) + Math.pow((this.y - this.target.y), 2));
+            let abs = Math.sqrt(Math.pow((this.x - this.target.x), 2) + Math.pow((this.y - this.target.y), 2));
             this.dx = ((this.target.x - this.x) * this.velocity) / abs;
             this.dy = ((this.target.y - this.y) * this.velocity) / abs;
 
@@ -221,21 +221,21 @@ function play() {
         };
 
         this.isHitBy = function (object) {
-            var dist = Math.sqrt(Math.pow((this.x - object.x), 2) + Math.pow((this.y - object.y), 2));
+            let dist = Math.sqrt(Math.pow((this.x - object.x), 2) + Math.pow((this.y - object.y), 2));
             return dist <= 12;
         };
 
         this.die = function () {
-            var radius = 15;
-            var randx =  (Math.random() + 1) * radius;
-            var randy =  (Math.random() + 1) * radius;
+            const radius = 15;
+            let randx = (Math.random() + 1) * radius;
+            let randy = (Math.random() + 1) * radius;
             enemies.push(new Enemy(this.x + randx, this.y + randy, player));
             enemies.push(new Enemy(this.x - randx, this.y - randy, player))
         }
     }
 
     function getRelativeMousePos(e) {
-        var rect = canvas.getBoundingClientRect();
+        let rect = canvas.getBoundingClientRect();
         return {
             x: e.clientX - rect.left,
             y: e.clientY - rect.top
@@ -243,8 +243,8 @@ function play() {
     }
 
     function getAngle(x1, y1, x2, y2) {
-        var dx = x2 - x1;
-        var dy = y2 - y1;
+        let dx = x2 - x1;
+        let dy = y2 - y1;
 
         return Math.atan2(dx, -dy) // Negative because canvas uses a negative y axis,
                                    // while atan2 uses a positive one (think unit circle)
